@@ -30,7 +30,7 @@ class WireGuardManager {
   /**
    * Executa um comando no sistema e retorna o resultado
    */
-  private async runCommand(command: string): Promise<string> {
+  async runCommand(command: string): Promise<string> {
     try {
       const { stdout, stderr } = await execAsync(command);
       if (stderr) {
@@ -50,33 +50,6 @@ class WireGuardManager {
       await this.runCommand("wg --version");
       return true;
     } catch (error) {
-      return false;
-    }
-  }
-
-  /**
-   * Verifica se o Bun está instalado no sistema
-   */
-  async isBunInstalled(): Promise<boolean> {
-    try {
-      await this.runCommand("bun --version");
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  /**
-   * Instala o Bun no sistema (Linux)
-   */
-  async installBun(): Promise<boolean> {
-    try {
-      console.log("📦 Instalando Bun...");
-      await this.runCommand("curl -fsSL https://bun.sh/install | bash");
-      console.log("✅ Bun instalado com sucesso!");
-      return true;
-    } catch (error) {
-      console.error("❌ Erro ao instalar Bun:", error);
       return false;
     }
   }
@@ -209,19 +182,6 @@ async function main() {
 
   const wgManager = new WireGuardManager();
 
-  // Verifica se o Bun está instalado
-  const isBunInstalled = await wgManager.isBunInstalled();
-  if (!isBunInstalled) {
-    console.log("❌ Bun não está instalado");
-    console.log("💡 Tentando instalar o Bun...");
-    const installed = await wgManager.installBun();
-    if (!installed) {
-      console.log("❌ Não foi possível instalar o Bun automaticamente");
-      console.log("💡 Instale manualmente: https://bun.sh/");
-      return;
-    }
-  }
-
   // Verifica se o WireGuard está instalado
   const isInstalled = await wgManager.isWireGuardInstalled();
   if (!isInstalled) {
@@ -231,6 +191,9 @@ async function main() {
   }
 
   console.log("✅ WireGuard está instalado!\n");
+
+  const output = await wgManager.runCommand("wg show");
+  console.log(output);
 
   // Lista todas as interfaces
   const interfaces = await wgManager.listInterfaces();
