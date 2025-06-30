@@ -60,7 +60,7 @@ class WireGuardManager {
     async listInterfaces(): Promise<string[]> {
         try {
             const output = await this.runCommand("wg show interfaces");
-            return output.split("\n").filter(line => line.trim());
+            return output.split(" ").filter(line => line.trim());
         } catch (error) {
             console.error("Erro ao listar interfaces:", error);
             return [];
