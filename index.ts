@@ -55,6 +55,33 @@ class WireGuardManager {
   }
 
   /**
+   * Verifica se o Bun está instalado no sistema
+   */
+  async isBunInstalled(): Promise<boolean> {
+    try {
+      await this.runCommand("bun --version");
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Instala o Bun no sistema (Linux)
+   */
+  async installBun(): Promise<boolean> {
+    try {
+      console.log("📦 Instalando Bun...");
+      await this.runCommand("curl -fsSL https://bun.sh/install | bash");
+      console.log("✅ Bun instalado com sucesso!");
+      return true;
+    } catch (error) {
+      console.error("❌ Erro ao instalar Bun:", error);
+      return false;
+    }
+  }
+
+  /**
    * Lista todas as interfaces WireGuard disponíveis
    */
   async listInterfaces(): Promise<string[]> {
@@ -72,7 +99,8 @@ class WireGuardManager {
    */
   async getInterfaceInfo(interfaceName: string): Promise<WireGuardInterface | null> {
     try {
-      const output = await this.runCommand(`wg show ${interfaceName}`);
+      // Usa aspas simples para escapar o nome da interface com espaços
+      const output = await this.runCommand(`wg show '${interfaceName}'`);
       const lines = output.split("\n");
       
       const wgInterface: WireGuardInterface = {
@@ -152,7 +180,8 @@ class WireGuardManager {
    */
   async getTransferStats(interfaceName: string): Promise<{ rx: number; tx: number } | null> {
     try {
-      const output = await this.runCommand(`wg show ${interfaceName} dump`);
+      // Usa aspas simples para escapar o nome da interface com espaços
+      const output = await this.runCommand(`wg show '${interfaceName}' dump`);
       const lines = output.split("\n");
       
       let totalRx = 0;
@@ -179,6 +208,19 @@ async function main() {
   console.log("🔍 Verificando informações do WireGuard...\n");
 
   const wgManager = new WireGuardManager();
+
+  // Verifica se o Bun está instalado
+  const isBunInstalled = await wgManager.isBunInstalled();
+  if (!isBunInstalled) {
+    console.log("❌ Bun não está instalado");
+    console.log("💡 Tentando instalar o Bun...");
+    const installed = await wgManager.installBun();
+    if (!installed) {
+      console.log("❌ Não foi possível instalar o Bun automaticamente");
+      console.log("💡 Instale manualmente: https://bun.sh/");
+      return;
+    }
+  }
 
   // Verifica se o WireGuard está instalado
   const isInstalled = await wgManager.isWireGuardInstalled();

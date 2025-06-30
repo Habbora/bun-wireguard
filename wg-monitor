@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Script wrapper para monitorar WireGuard sem precisar de sudo
+# Precisa ser executado com setuid root
+
+# Verifica se está sendo executado como root
+if [ "$EUID" -ne 0 ]; then
+    echo "❌ Este script precisa ser executado como root"
+    echo "💡 Configure as permissões: sudo chown root:root wg-monitor && sudo chmod +s wg-monitor"
+    exit 1
+fi
+
+# Define o caminho do Bun
+BUN_PATH="/home/alisson/.bun/bin/bun"
+PROJECT_DIR="/home/alisson/workspace/bun-wireguard"
+
+# Verifica se o Bun existe
+if [ ! -f "$BUN_PATH" ]; then
+    echo "❌ Bun não encontrado em: $BUN_PATH"
+    exit 1
+fi
+
+# Verifica se o projeto existe
+if [ ! -d "$PROJECT_DIR" ]; then
+    echo "❌ Diretório do projeto não encontrado: $PROJECT_DIR"
+    exit 1
+fi
+
+# Executa o programa
+cd "$PROJECT_DIR"
+exec "$BUN_PATH" run index.ts 

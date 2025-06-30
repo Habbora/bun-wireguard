@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Wrapper para executar wg sem sudo
+# Precisa ser configurado com setuid
+
+# Verifica se tem permissões de root
+if [ "$EUID" -ne 0 ]; then
+    echo "❌ Este script precisa de permissões de root"
+    echo "💡 Configure: sudo chown root:root wg-wrapper && sudo chmod +s wg-wrapper"
+    exit 1
+fi
+
+# Executa o comando wg
+exec /usr/bin/wg "$@" 
